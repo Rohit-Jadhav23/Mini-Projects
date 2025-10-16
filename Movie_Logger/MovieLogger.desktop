@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Movie Logger
+Comment=Log and View Your Movies
+Exec=//home/rohit/Desktop/GUI_LIB/MovieLog/MovieLogger.out
+Path=/home/rohit/Desktop/GUI_LIB/MovieLog/
+Icon=/home/rohit/Desktop/GUI_LIB/MovieLog/icon.png
+Terminal=false
+Type=Application
+Categories=Utility;

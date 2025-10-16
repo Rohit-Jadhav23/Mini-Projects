@@ -1,0 +1,7 @@
+Run this command in terminal to compile on updates:
+
+gcc -o Movies1 Movies3.c `pkg-config --cflags --libs gtk+-3.0` `mysql_config --cflags --libs`
+
+Data is stored on local Mysql DB: iotdb.Movies, root, pw:Root@1234
+
+Desktop application is given in folder: change file paths as required to access through dekstop. and paste it in your desktop to run.

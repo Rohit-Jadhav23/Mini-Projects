@@ -75,30 +75,72 @@ void on_view_clicked(GtkWidget *widget, gpointer data)
         return;
     }
 
+    
+    // Create window
     GtkWidget *view_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(view_window), "Movie Log");
-    gtk_window_set_default_size(GTK_WINDOW(view_window), 400, 300);
+    gtk_window_set_default_size(GTK_WINDOW(view_window), 500, 400);
 
-    GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
-    GtkWidget *textview = gtk_text_view_new();
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+    // Create list store with 5 columns: ID, Name, Year, Rating, Date
+    GtkListStore *store = gtk_list_store_new(5, G_TYPE_STRING, G_TYPE_STRING, 
+                                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
-    gtk_container_add(GTK_CONTAINER(scroll), textview);
-    gtk_container_add(GTK_CONTAINER(view_window), scroll);
-
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-    GtkTextIter iter;
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-
+    // Populate the list store
+    GtkTreeIter iter;
     while ((row = mysql_fetch_row(res)))
     {
-        gchar *line = g_strdup_printf("[%1s] %-15s  (%-6s)    -Rating: %-3s/5    -Date:%-10s\n", row[0], row[1], row[2], row[3], row[4]);
-        gtk_text_buffer_insert(buffer, &iter, line, -1);
-        g_free(line);
+        gtk_list_store_append(store, &iter);
+        gtk_list_store_set(store, &iter,
+                          0, row[0],  // ID
+                          1, row[1],  // Name
+                          2, row[2],  // Year
+                          3, row[3],  // Rating
+                          4, row[4],  // Date
+                          -1);
     }
 
     mysql_free_result(res);
     mysql_close(conn);
+
+    // Create tree view
+    GtkWidget *tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+    g_object_unref(store); // Tree view now holds reference
+
+    // Create columns
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    
+    GtkTreeViewColumn *col_id = gtk_tree_view_column_new_with_attributes(
+        "ID", renderer, "text", 0, NULL);
+    gtk_tree_view_column_set_fixed_width(col_id, 50);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), col_id);
+
+    GtkTreeViewColumn *col_name = gtk_tree_view_column_new_with_attributes(
+        "Movie Name", renderer, "text", 1, NULL);
+    gtk_tree_view_column_set_min_width(col_name, 200);
+    gtk_tree_view_column_set_resizable(col_name, TRUE);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), col_name);
+
+    GtkTreeViewColumn *col_year = gtk_tree_view_column_new_with_attributes(
+        "Year", renderer, "text", 2, NULL);
+    gtk_tree_view_column_set_fixed_width(col_year, 80);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), col_year);
+
+    GtkTreeViewColumn *col_rating = gtk_tree_view_column_new_with_attributes(
+        "Rating", renderer, "text", 3, NULL);
+    gtk_tree_view_column_set_fixed_width(col_rating, 80);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), col_rating);
+
+    GtkTreeViewColumn *col_date = gtk_tree_view_column_new_with_attributes(
+        "Date", renderer, "text", 4, NULL);
+    gtk_tree_view_column_set_min_width(col_date, 120);
+    gtk_tree_view_column_set_resizable(col_date, TRUE);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), col_date);
+
+    // Add to scrolled window
+    GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(scroll), tree_view);
+    gtk_container_add(GTK_CONTAINER(view_window), scroll);
+
     gtk_widget_show_all(view_window);
 }
 
@@ -116,6 +158,7 @@ int main(int argc, char *argv[])
     // window
 
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Movie Logger");
     gtk_window_set_default_size(GTK_WINDOW(window), 200, 400); // width: 400px, height: 300px
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
