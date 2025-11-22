@@ -13,6 +13,17 @@
         <a href="/blog">Back to Blog</a>
     </nav>
 </header>
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <!-- rest of your content here -->
+</div>
 
 <div class="container">
     <form action="/edit/{{ post.id }}" method="POST">

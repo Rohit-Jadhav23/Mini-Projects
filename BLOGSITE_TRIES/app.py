@@ -49,6 +49,10 @@ def addpost():
 
 @app.route('/delete/<int:id>')
 def delete_post(id):
+    if 'logged_in' not in session:
+        flash('You must be logged in to delete posts!', 'error')
+        return redirect(url_for('login'))
+    
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM blogposts WHERE id = %s", [id])
     mysql.connection.commit()
@@ -58,6 +62,10 @@ def delete_post(id):
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit_post(id):
+    if 'logged_in' not in session:
+        flash('You must be logged in to edit posts!', 'error')
+        return redirect(url_for('login'))
+    
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     
     if request.method == 'POST':
@@ -72,12 +80,17 @@ def edit_post(id):
         
         return redirect(url_for('blog'))
     
-    # GET request - show the form with existing data
     cur.execute("SELECT * FROM blogposts WHERE id = %s", [id])
     post = cur.fetchone()
     cur.close()
     
     return render_template('edit_post.html', post=post)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out successfully!', 'success')
+    return redirect(url_for('blog'))
 
 @app.route('/register',methods=['GET','POST'])
 def register():
